@@ -1,0 +1,21 @@
+The ion.json outputted by IonMonkey contains the following hierarchy:
+
+functions [list]
+	passes [list]
+		name [string]
+		lir [obj]
+			blocks [list]
+		mir [obj]
+			blocks [list]
+				number [int]
+				attributes [string list]
+					"backedge"
+					"loopheader"
+				successors [list]
+				predecessors [list]
+				instructions [list]
+					inputs [list]
+					uses [list]
+					opcode [string]
+					id [int]
+

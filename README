@@ -1,0 +1,30 @@
+
+  Primitive visualizer for IonMonkey graphs using GraphViz.
+  Doesn't involve HTML5. Generated images and DOT files are saved on disk.
+
+  Copyright Sean Stangl <sstangl@mozilla.com>, 2011.
+
+IONMONKEY
+
+  IonMonkey is a compiler for JavaScript that uses an SSA-form IR.
+  IonMonkey may be downloaded from http://hg.mozilla.org/projects/ionmonkey.
+
+USAGE
+
+  IonMonkey, when it runs without asserting, dumps a JSON file that contains
+  observations about graph state after various passes into /tmp/ion.json.
+
+  Executing 'make' reads in this file, outputs a DOT file for each function
+  and for each pass for each function, and then generates PNG images from
+  those DOT files.
+
+  Iterating over those PNG files crudely shows changes to the graph over time.
+
+GRAPH PROPERTIES
+
+  Blocks with green borders are loop headers.
+  Blocks with red borders contain loop backedges (successor is a header).
+
+  Edges from blocks ending with conditional branches are annotated with
+    the truth value associated with each edge, given as '0' or '1'.
+

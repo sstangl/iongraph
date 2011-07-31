@@ -1,0 +1,182 @@
+#!/usr/bin/env python
+#
+# Reads in IonMonkey JSON files.
+# Outputs useful graphical descriptions of those files in GraphViz format.
+# Runs those files through GraphViz.
+#
+# Copyright 2011, Sean Stangl <sstangl@mozilla.com>
+#
+
+import json
+import sys
+
+def quote(s): return '"' + str(s) + '"'
+
+# Simple classes for the used subset of GraphViz' Dot format.
+# There are more complicated constructors out there, but they all
+# pull in annoying dependencies (and are annoying dependencies themselves).
+class GraphWidget:
+	def __init__(self):
+		self.name = ''
+		self.props = {}
+
+	def addprops(self, propdict):
+		for p in propdict:
+			self.props[p] = propdict[p]
+
+
+class Node(GraphWidget):
+	def __init__(self, name):
+		GraphWidget.__init__(self)
+		self.name = str(name)
+
+class Edge(GraphWidget):
+	def __init__(self, nfrom, nto):
+		GraphWidget.__init__(self)
+		self.nfrom = str(nfrom)
+		self.nto = str(nto)
+
+class Graph(GraphWidget):
+	def __init__(self, name, type):
+		GraphWidget.__init__(self)
+		self.name = name
+		self.type = str(type)
+		self.props = {}
+		self.nodes = []
+		self.edges = []
+
+	def addnode(self, n):
+		self.nodes.append(n)
+
+	def addedge(self, e):
+		self.edges.append(e)
+
+	def writeprops(self, f, o):
+		if len(o.props) == 0:
+			return
+
+		print >> f, '[',
+		for p in o.props:
+			print >> f, str(p) + '=' + str(o.props[p]),
+		print >> f, ']',
+
+	def write(self, f):
+		print >> f, self.type, '{'
+		
+		# Output graph properties.
+		for p in self.props:
+			print >> f, '  ' + str(p) + '=' + str(self.props[p])
+		print >> f, ''
+
+		# Output node list.
+		for n in self.nodes:
+			print >> f, '  ' + n.name,
+			self.writeprops(f, n)
+			print >> f, ';'
+		print >> f, ''
+		
+		# Output edge list.
+		for e in self.edges:
+			print >> f, '  ' + e.nfrom, '->', e.nto,
+			self.writeprops(f, e)
+			print >> f, ';'
+
+		print >> f, '}'
+
+
+# inst -> string with quotation marks
+def getInstructionName(inst):
+	return '"(' + str(inst['id']) + ') ' + inst['opcode'] + '"'
+
+# block obj -> node string with quotations
+def getBlockNodeName(b):
+	return blockNumToNodeName(b['number'])
+
+# int -> node string with quotations
+def blockNumToNodeName(i):
+	return quote('Block' + str(i))
+
+# block obj -> HTML-formatted string
+def getBlockLabel(b):
+	s =  '<<table border="0" cellborder="0" cellpadding="1">'
+	s +=   '<tr><td align="center" bgcolor="black" colspan="2">'
+	s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
+	s +=   '</td></tr>'
+
+	for inst in b['instructions']:
+		s += '<tr>'
+		s +=   '<td align="left" port="i' + str(inst['id']) + '">'
+		s +=     '&#40;' # left parenthesis
+		s +=     str(inst['id'])
+		s +=     '&#41;' # right parenthesis
+		s +=   '</td>'
+		s +=   '<td align="left">'
+		s +=     inst['opcode']
+		s +=   '</td>'
+		s += '</tr>'
+
+	s += '</table>>'
+	return s
+
+
+# pass obj -> output file -> void
+def buildGraphForPass(p):
+	g = Graph(p['name'], 'digraph')
+	g.addprops({'rankdir':'TB', 'splines':'true'})
+
+	mir = p['mir']
+
+	for b in mir['blocks']:
+		node = Node(getBlockNodeName(b))
+		node.addprops({'shape':'box', 'label':getBlockLabel(b)})
+		
+		if 'backedge' in b['attributes']:
+			node.addprops({'color':'red'})
+		if 'loopheader' in b['attributes']:
+			node.addprops({'color':'green'})
+
+		g.addnode(node)
+
+		for succ in b['successors']: # which are integers
+			edge = Edge(getBlockNodeName(b), blockNumToNodeName(succ))
+			
+			if len(b['successors']) == 2:
+				if succ == b['successors'][0]:
+					edge.addprops({'label':'1'})
+				else:
+					edge.addprops({'label':'0'})
+
+			g.addedge(edge)
+
+	return g
+
+# function obj -> output file -> void
+def buildGraphs(func):
+	graphs = []
+	for p in func['passes']:
+		g = buildGraphForPass(p)
+		graphs.append(g)
+
+	return graphs
+
+# Operate on provided file.
+if __name__ == '__main__':
+	from sys import argv
+
+	if len(argv) != 2:
+		sys.stderr.write(" Usage: " + sys.argv[0] + " <JSON file>\n")
+		sys.exit(1)
+
+	f = open(argv[1], 'r')
+	ion = json.load(f)
+	f.close()
+
+	for i in range(0, len(ion['functions'])):
+		func = ion['functions'][i]
+		gl = buildGraphs(func)
+		for j in range(0, len(gl)):
+			g = gl[j]
+			out  = open('func'+str(i)+'-pass'+str(j)+'-'+g.name+'.gv', 'w')
+			g.write(out)
+			out.close()
+

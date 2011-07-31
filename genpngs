@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ls -1 *.gv | while read g; do
+	dot "${g}" -Tpng > "${g}.png"
+done
+
