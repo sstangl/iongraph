@@ -24,7 +24,7 @@ GRAPH PROPERTIES
 
   Blocks with green borders are loop headers.
   Blocks with red borders contain loop backedges (successor is a header).
-	Blocks with blue borders were created during critical edge splitting.
+	Blocks with dashed borders were created during critical edge splitting.
 
   Edges from blocks ending with conditional branches are annotated with
     the truth value associated with each edge, given as '0' or '1'.

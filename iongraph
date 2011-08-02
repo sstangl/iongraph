@@ -135,7 +135,7 @@ def buildGraphForPass(p):
 		if 'loopheader' in b['attributes']:
 			node.addprops({'color':'green'})
 		if 'splitedge' in b['attributes']:
-			node.addprops({'color':'blue'})
+			node.addprops({'style':'dashed'})
 
 		g.addnode(node)
 
