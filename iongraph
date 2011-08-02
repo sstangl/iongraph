@@ -9,6 +9,7 @@
 
 import json
 import sys
+import cgi
 
 def quote(s): return '"' + str(s) + '"'
 
@@ -111,24 +112,31 @@ def getBlockLabel(b):
 		s +=     '&#41;' # right parenthesis
 		s +=   '</td>'
 		s +=   '<td align="left">'
-		s +=     inst['opcode']
+		s +=     cgi.escape(inst['opcode'])
 		s +=   '</td>'
 		s += '</tr>'
 
 	s += '</table>>'
 	return s
 
+# str -> ir obj -> ir obj -> Graph
+# 'ir' is the IR to be used.
+# 'mir' is always the MIR.
+#  This is because the LIR graph does not contain successor information,
+#  but it's the same as 
+def buildGraphForIR(name, ir, mir):
+	if len(ir['blocks']) == 0:
+		return None
 
-# pass obj -> output file -> void
-def buildGraphForPass(p):
-	g = Graph(p['name'], 'digraph')
+	g = Graph(name, 'digraph')
 	g.addprops({'rankdir':'TB', 'splines':'true'})
 
-	mir = p['mir']
+	for i in range(0, len(ir['blocks'])):
+		bactive = ir['blocks'][i] # Used for block contents.
+		b = mir['blocks'][i] # Used for drawing blocks and edges.
 
-	for b in mir['blocks']:
-		node = Node(getBlockNodeName(b))
-		node.addprops({'shape':'box', 'label':getBlockLabel(b)})
+		node = Node(getBlockNodeName(bactive))
+		node.addprops({'shape':'box', 'label':getBlockLabel(bactive)})
 		
 		if 'backedge' in b['attributes']:
 			node.addprops({'color':'red'})
@@ -140,8 +148,8 @@ def buildGraphForPass(p):
 		g.addnode(node)
 
 		for succ in b['successors']: # which are integers
-			edge = Edge(getBlockNodeName(b), blockNumToNodeName(succ))
-			
+			edge = Edge(getBlockNodeName(bactive), blockNumToNodeName(succ))
+				
 			if len(b['successors']) == 2:
 				if succ == b['successors'][0]:
 					edge.addprops({'label':'1'})
@@ -152,14 +160,37 @@ def buildGraphForPass(p):
 
 	return g
 
-# function obj -> output file -> void
-def buildGraphs(func):
-	graphs = []
-	for p in func['passes']:
-		g = buildGraphForPass(p)
-		graphs.append(g)
+# pass obj -> output file -> (Graph OR None, Graph OR None)
+# The return value is (MIR, LIR); either one may be absent.
+def buildGraphsForPass(p):
+	name = p['name']
+	mir = p['mir']
+	lir = p['lir']
+	return (buildGraphForIR(name, mir, mir), buildGraphForIR(name, lir, mir))
 
-	return graphs
+# function obj -> output file -> (Graph OR None, Graph OR None) list
+# First entry in each tuple corresponds to MIR; second, to LIR.
+def buildGraphs(func):
+	graphstup = []
+	for p in func['passes']:
+		gtup = buildGraphsForPass(p)
+		graphstup.append(gtup)
+
+	return graphstup
+
+
+# Write out a graph, constructing a nice filename.
+# function id -> pass id -> IR string -> Graph -> void
+def outputPass(fnum, pnum, irname, g):
+	filename  = 'func' + str(fnum)
+	filename += '-pass' + str(pnum)
+	filename += '-' + str(irname)
+	filename += '-' + g.name
+	filename += '.gv'
+
+	f = open(filename, 'w')
+	g.write(f)
+	f.close()
 
 # Operate on provided file.
 if __name__ == '__main__':
@@ -175,10 +206,16 @@ if __name__ == '__main__':
 
 	for i in range(0, len(ion['functions'])):
 		func = ion['functions'][i]
-		gl = buildGraphs(func)
-		for j in range(0, len(gl)):
-			g = gl[j]
-			out  = open('func'+str(i)+'-pass'+str(j)+'-'+g.name+'.gv', 'w')
-			g.write(out)
-			out.close()
+		gtl = buildGraphs(func)
+		for j in range(0, len(gtl)):
+			gt = gtl[j]
+			mir = gt[0]
+			lir = gt[1]
+
+			# Only output one of (MIR, LIR). Prefer LIR.
+			# This is just to avoid spam; change if you care about it.
+			if lir != None:
+				outputPass(i, j, 'lir', lir)
+			elif mir != None:
+				outputPass(i, j, 'mir', mir)
 
