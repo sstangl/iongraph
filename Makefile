@@ -3,4 +3,4 @@ all:
 	./genpngs
 
 clean:
-	rm -f *.gv *.png
+	rm -f *.gv *gv.png
