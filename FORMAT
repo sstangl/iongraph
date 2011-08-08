@@ -18,4 +18,5 @@ functions [list]
 					uses [list]
 					opcode [string]
 					id [int]
+					type [string]
 

@@ -100,7 +100,7 @@ def blockNumToNodeName(i):
 # block obj -> HTML-formatted string
 def getBlockLabel(b):
 	s =  '<<table border="0" cellborder="0" cellpadding="1">'
-	s +=   '<tr><td align="center" bgcolor="black" colspan="2">'
+	s +=   '<tr><td align="center" bgcolor="black" colspan="3">'
 	s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
 	s +=   '</td></tr>'
 
@@ -114,6 +114,10 @@ def getBlockLabel(b):
 		s +=   '<td align="left">'
 		s +=     cgi.escape(inst['opcode'])
 		s +=   '</td>'
+		if 'type' in inst:
+			s +=   '<td align="left">'
+			s +=     cgi.escape(inst['type'])
+			s +=   '</td>'
 		s += '</tr>'
 
 	s += '</table>>'
