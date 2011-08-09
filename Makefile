@@ -1,5 +1,5 @@
-all:
-	./iongraph /tmp/ion.json
+all: /tmp/ion.json
+	./iongraph $<
 	./genpngs
 
 clean:
