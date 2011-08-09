@@ -17,6 +17,12 @@ functions [list]
 					inputs [list]
 					uses [list]
 					opcode [string]
+					attributes [string list]
+						"LoopInvariant"
+						"Commutative"
+						"Idempotent"
+						"NeverHoisted"
+						... some other unused ones; check MIR.h MIR_FLAG_LIST.
 					id [int]
 					type [string]
 
