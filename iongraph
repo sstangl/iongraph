@@ -122,7 +122,7 @@ def getBlockLabel(b):
 			s += cgi.escape(inst['opcode'])
 		s +=   '</td>'
 
-		if 'type' in inst:
+		if 'type' in inst and inst['type'] != "None":
 			s +=   '<td align="left">'
 			s +=     cgi.escape(inst['type'])
 			s +=   '</td>'
