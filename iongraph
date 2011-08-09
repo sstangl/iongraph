@@ -213,8 +213,19 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	f = open(argv[1], 'r')
-	ion = json.load(f)
+	s = f.readline() # JSONSpewer emits all data on a single line.
 	f.close()
+
+	try:
+		ion = json.loads(s)
+	except:
+		# If IonMonkey crashed before ion.json could be terminated,
+		# attempt to patch up some missing closing braces.
+		s += ']' # End pass list.
+		s += '}' # End function object.
+		s += ']' # End function list.
+		s += '}' # End main object.
+		ion = json.loads(s)
 
 	for i in range(0, len(ion['functions'])):
 		func = ion['functions'][i]
