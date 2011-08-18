@@ -221,6 +221,12 @@ def main():
 	for i in range(0, len(ion['functions'])):
 		func = ion['functions'][i]
 		gtl = buildGraphs(func)
+
+		if len(gtl) == 0:
+			sys.stderr.write(" function %d (%s): abort during SSA construction.\n" % (i, func['name']))
+		else:
+			sys.stderr.write(" function %d (%s): success; %d passes.\n" % (i, func['name'], len(gtl)))
+
 		for j in range(0, len(gtl)):
 			gt = gtl[j]
 			mir = gt[0]
