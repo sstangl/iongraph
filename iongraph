@@ -196,8 +196,8 @@ def buildGraphs(func):
 def outputPass(fnum, pnum, irname, g):
 	filename  = 'func' + str(fnum)
 	filename += '-pass' + str(pnum)
-	filename += '-' + str(irname)
 	filename += '-' + g.name
+	filename += '-' + str(irname)
 	filename += '.gv'
 
 	f = open(filename, 'w')
