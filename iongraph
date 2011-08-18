@@ -204,8 +204,8 @@ def outputPass(fnum, pnum, irname, g):
 	g.write(f)
 	f.close()
 
+def main():
 # Operate on provided file.
-if __name__ == '__main__':
 	from sys import argv
 
 	if len(argv) != 2:
@@ -241,4 +241,7 @@ if __name__ == '__main__':
 				outputPass(i, j, 'lir', lir)
 			elif mir != None:
 				outputPass(i, j, 'mir', mir)
+
+if __name__ == '__main__':
+	main()
 
