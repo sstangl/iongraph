@@ -229,7 +229,7 @@ def main():
 		sys.exit(1)
 
 	f = open(argv[1], 'r')
-	s = f.readline() # JSONSpewer emits all data on a single line.
+	s = f.read()
 	f.close()
 
 	ion = json.loads(parenthesize(s))
