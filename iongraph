@@ -204,6 +204,22 @@ def outputPass(fnum, pnum, irname, g):
 	g.write(f)
 	f.close()
 
+# Add in closing } and ] braces to close a JSON file in case of error.
+def parenthesize(s):
+	stack = []
+	for c in s:
+		if   c == '{' or c == '[':
+			stack.append(c)
+		elif c == '}' or c == ']':
+			stack.pop()
+	
+	while stack:
+		c = stack.pop()
+		if   c == '{': s += '}'
+		elif c == '[': s += ']'
+
+	return s
+
 def main():
 # Operate on provided file.
 	from sys import argv
@@ -216,7 +232,7 @@ def main():
 	s = f.readline() # JSONSpewer emits all data on a single line.
 	f.close()
 
-	ion = json.loads(s)
+	ion = json.loads(parenthesize(s))
 
 	for i in range(0, len(ion['functions'])):
 		func = ion['functions'][i]
