@@ -107,6 +107,7 @@ def getBlockLabel(b):
 	for inst in b['instructions']:
 		hasattributes = 'attributes' in inst
 		idempotent = hasattributes and 'Idempotent' in inst['attributes']
+		neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
 
 		s += '<tr>'
 		s +=   '<td align="left" port="i' + str(inst['id']) + '">'
@@ -115,13 +116,21 @@ def getBlockLabel(b):
 		s +=     '&#41;' # right parenthesis
 		s +=   '</td>'
 
+		# Output name with additional styling.
 		s +=   '<td align="left">'
+		if neverhoisted:
+			s += '<u>'
+
 		if idempotent:
 			s += '<font color="blue">' + cgi.escape(inst['opcode']) + '</font>'
 		else:
 			s += cgi.escape(inst['opcode'])
+
+		if neverhoisted:
+			s += '</u>'
 		s +=   '</td>'
 
+		# Output type.
 		if 'type' in inst and inst['type'] != "None":
 			s +=   '<td align="left">'
 			s +=     cgi.escape(inst['type'])
