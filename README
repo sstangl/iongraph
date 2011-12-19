@@ -1,6 +1,6 @@
 
   Primitive visualizer for IonMonkey graphs using GraphViz.
-  Doesn't involve HTML5. Generated images and DOT files are saved on disk.
+  Doesn't involve Java. Generated images and DOT files are saved on disk.
 
   Copyright Sean Stangl <sstangl@mozilla.com>, 2011.
 

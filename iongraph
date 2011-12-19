@@ -143,8 +143,7 @@ def getBlockLabel(b):
 # str -> ir obj -> ir obj -> Graph
 # 'ir' is the IR to be used.
 # 'mir' is always the MIR.
-#  This is because the LIR graph does not contain successor information,
-#  but it's the same as 
+#  This is because the LIR graph does not contain successor information.
 def buildGraphForIR(name, ir, mir):
 	if len(ir['blocks']) == 0:
 		return None

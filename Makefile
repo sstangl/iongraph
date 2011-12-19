@@ -3,4 +3,4 @@ all: /tmp/ion.json
 	./genpngs
 
 clean:
-	rm -f *.gv *gv.png
+	rm -f *.gv *.gv.png
