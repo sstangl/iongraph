@@ -26,8 +26,8 @@ GRAPH PROPERTIES
   Blocks with red borders contain loop backedges (successor is a header).
   Blocks with dashed borders were created during critical edge splitting.
 
-  Instructions that are idempotent are blue.
-  Instructions that cannot be hoisted even if idempotent are underlined.
+  Instructions that are movable are blue.
+  Instructions that cannot be hoisted even if movable are underlined.
 
   Edges from blocks ending with conditional branches are annotated with
     the truth value associated with each edge, given as '0' or '1'.

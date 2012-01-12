@@ -106,7 +106,7 @@ def getBlockLabel(b):
 
 	for inst in b['instructions']:
 		hasattributes = 'attributes' in inst
-		idempotent = hasattributes and 'Idempotent' in inst['attributes']
+		movable = hasattributes and 'Movable' in inst['attributes']
 		neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
 
 		s += '<tr>'
@@ -121,7 +121,7 @@ def getBlockLabel(b):
 		if neverhoisted:
 			s += '<u>'
 
-		if idempotent:
+		if movable:
 			s += '<font color="blue">' + cgi.escape(inst['opcode']) + '</font>'
 		else:
 			s += cgi.escape(inst['opcode'])

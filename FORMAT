@@ -20,7 +20,7 @@ functions [list]
 					attributes [string list]
 						"LoopInvariant"
 						"Commutative"
-						"Idempotent"
+						"Movable"
 						"NeverHoisted"
 						... some other unused ones; check MIR.h MIR_FLAG_LIST.
 					id [int]
