@@ -202,8 +202,8 @@ def buildGraphs(func):
 # Write out a graph, constructing a nice filename.
 # function id -> pass id -> IR string -> Graph -> void
 def outputPass(fnum, pnum, irname, g):
-	filename  = 'func' + str(fnum)
-	filename += '-pass' + str(pnum)
+	filename  = 'func' + str(fnum).zfill(2)
+	filename += '-pass' + str(pnum).zfill(2)
 	filename += '-' + g.name
 	filename += '-' + str(irname)
 	filename += '.gv'

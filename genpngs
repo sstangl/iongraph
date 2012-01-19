@@ -1,6 +1,11 @@
 #!/bin/bash
 
+# Use GNU parallel to generate dot files, if present.
+type parallel &>/dev/null &&
+ls -1 *.gv | parallel '(dot {} -Tpng) > {}.png' &&
+exit 0
+
+# Otherwise, generate dot files sequentially.
 ls -1 *.gv | while read g; do
 	dot "${g}" -Tpng > "${g}.png"
 done
-
