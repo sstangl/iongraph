@@ -15,10 +15,10 @@ USAGE
   observations about graph state after various passes into /tmp/ion.json.
 
   Executing 'make' reads in this file, outputs a DOT file for each function
-  and for each pass for each function, and then generates PNG images from
-  those DOT files.
+  and for each pass for each function, and then generates visualizations
+  of those DOT files in PNG and PDF format.
 
-  Iterating over those PNG files crudely shows changes to the graph over time.
+  Iterating over those files crudely shows changes to the graph over time.
 
 GRAPH PROPERTIES
 
