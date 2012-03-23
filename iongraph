@@ -97,6 +97,29 @@ def getBlockNodeName(b):
 def blockNumToNodeName(i):
 	return quote('Block' + str(i))
 
+# resumePoint obj -> HTML-formatted string
+def getResumePointLabel(rp, mode):
+        if mode != None and mode != rp['mode']:
+                return '';
+        s = '<tr>'
+        if 'caller' in rp:
+                s +=   '<td align="left">'
+                s +=     '&#40;&#40;' # left parenthesis
+                s +=     str(rp['caller'])
+                s +=     '&#41;&#41;' # right parenthesis
+                s +=   '</td>'
+        else:
+                s +=   '<td align="left">' # caller id
+                s +=   '</td>'
+        s +=   '<td align="left">[ '
+        for operand in rp['operands']:
+                s += str(operand) + ' '
+        s +=   ']</td>'
+        s +=   '<td align="left">' # type
+        s +=   '</td>'
+        s += '</tr>'
+	return s
+
 # block obj -> HTML-formatted string
 def getBlockLabel(b):
 	s =  '<<table border="0" cellborder="0" cellpadding="1">'
@@ -104,7 +127,13 @@ def getBlockLabel(b):
 	s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
 	s +=   '</td></tr>'
 
+        if 'resumePoint' in b:
+                s += getResumePointLabel(b['resumePoint'], None)
+
 	for inst in b['instructions']:
+                if 'resumePoint' in inst:
+                        s += getResumePointLabel(inst['resumePoint'], 'At')
+
 		hasattributes = 'attributes' in inst
 		movable = hasattributes and 'Movable' in inst['attributes']
 		neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
@@ -136,6 +165,9 @@ def getBlockLabel(b):
 			s +=     cgi.escape(inst['type'])
 			s +=   '</td>'
 		s += '</tr>'
+
+                if 'resumePoint' in inst:
+                        s += getResumePointLabel(inst['resumePoint'], 'After')
 
 	s += '</table>>'
 	return s
