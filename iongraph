@@ -1,300 +1,297 @@
 #!/usr/bin/env python
-#
-# Reads in IonMonkey JSON files.
-# Outputs useful graphical descriptions of those files in GraphViz format.
-# Runs those files through GraphViz.
-#
-# Copyright 2011, Sean Stangl <sstangl@mozilla.com>
-#
+# vim: set ts=4 sw=4 tw=99 et:
+
+# iongraph -- Translate IonMonkey JSON to GraphViz.
+# Copyright 2011-2012, Sean Stangl <sstangl@mozilla.com>
 
 import json
 import sys
 import cgi
 
-def quote(s): return '"' + str(s) + '"'
+def quote(s):
+    return '"' + str(s) + '"'
 
 # Simple classes for the used subset of GraphViz' Dot format.
 # There are more complicated constructors out there, but they all
 # pull in annoying dependencies (and are annoying dependencies themselves).
 class GraphWidget:
-	def __init__(self):
-		self.name = ''
-		self.props = {}
+    def __init__(self):
+        self.name = ''
+        self.props = {}
 
-	def addprops(self, propdict):
-		for p in propdict:
-			self.props[p] = propdict[p]
+    def addprops(self, propdict):
+        for p in propdict:
+            self.props[p] = propdict[p]
 
 
 class Node(GraphWidget):
-	def __init__(self, name):
-		GraphWidget.__init__(self)
-		self.name = str(name)
+    def __init__(self, name):
+        GraphWidget.__init__(self)
+        self.name = str(name)
 
 class Edge(GraphWidget):
-	def __init__(self, nfrom, nto):
-		GraphWidget.__init__(self)
-		self.nfrom = str(nfrom)
-		self.nto = str(nto)
+    def __init__(self, nfrom, nto):
+        GraphWidget.__init__(self)
+        self.nfrom = str(nfrom)
+        self.nto = str(nto)
 
 class Graph(GraphWidget):
-	def __init__(self, name, type):
-		GraphWidget.__init__(self)
-		self.name = name
-		self.type = str(type)
-		self.props = {}
-		self.nodes = []
-		self.edges = []
+    def __init__(self, name, type):
+        GraphWidget.__init__(self)
+        self.name = name
+        self.type = str(type)
+        self.props = {}
+        self.nodes = []
+        self.edges = []
 
-	def addnode(self, n):
-		self.nodes.append(n)
+    def addnode(self, n):
+        self.nodes.append(n)
 
-	def addedge(self, e):
-		self.edges.append(e)
+    def addedge(self, e):
+        self.edges.append(e)
 
-	def writeprops(self, f, o):
-		if len(o.props) == 0:
-			return
+    def writeprops(self, f, o):
+        if len(o.props) == 0:
+            return
 
-		print >> f, '[',
-		for p in o.props:
-			print >> f, str(p) + '=' + str(o.props[p]),
-		print >> f, ']',
+        print >> f, '[',
+        for p in o.props:
+            print >> f, str(p) + '=' + str(o.props[p]),
+        print >> f, ']',
 
-	def write(self, f):
-		print >> f, self.type, '{'
-		
-		# Output graph properties.
-		for p in self.props:
-			print >> f, '  ' + str(p) + '=' + str(self.props[p])
-		print >> f, ''
+    def write(self, f):
+        print >> f, self.type, '{'
+        
+        # Output graph properties.
+        for p in self.props:
+            print >> f, '  ' + str(p) + '=' + str(self.props[p])
+        print >> f, ''
 
-		# Output node list.
-		for n in self.nodes:
-			print >> f, '  ' + n.name,
-			self.writeprops(f, n)
-			print >> f, ';'
-		print >> f, ''
-		
-		# Output edge list.
-		for e in self.edges:
-			print >> f, '  ' + e.nfrom, '->', e.nto,
-			self.writeprops(f, e)
-			print >> f, ';'
+        # Output node list.
+        for n in self.nodes:
+            print >> f, '  ' + n.name,
+            self.writeprops(f, n)
+            print >> f, ';'
+        print >> f, ''
+        
+        # Output edge list.
+        for e in self.edges:
+            print >> f, '  ' + e.nfrom, '->', e.nto,
+            self.writeprops(f, e)
+            print >> f, ';'
 
-		print >> f, '}'
+        print >> f, '}'
 
 
 # inst -> string with quotation marks
 def getInstructionName(inst):
-	return '"(' + str(inst['id']) + ') ' + inst['opcode'] + '"'
+    return '"(' + str(inst['id']) + ') ' + inst['opcode'] + '"'
 
 # block obj -> node string with quotations
 def getBlockNodeName(b):
-	return blockNumToNodeName(b['number'])
+    return blockNumToNodeName(b['number'])
 
 # int -> node string with quotations
 def blockNumToNodeName(i):
-	return quote('Block' + str(i))
+    return quote('Block' + str(i))
 
 # resumePoint obj -> HTML-formatted string
 def getResumePointLabel(rp, mode):
-        if mode != None and mode != rp['mode']:
-                return '';
-        s = '<tr>'
-        if 'caller' in rp:
-                s +=   '<td align="left">'
-                s +=     '&#40;&#40;' # left parenthesis
-                s +=     str(rp['caller'])
-                s +=     '&#41;&#41;' # right parenthesis
-                s +=   '</td>'
-        else:
-                s +=   '<td align="left">' # caller id
-                s +=   '</td>'
-        s +=   '<td align="left">[ '
-        for operand in rp['operands']:
-                s += str(operand) + ' '
-        s +=   ']</td>'
-        s +=   '<td align="left">' # type
+    if mode != None and mode != rp['mode']:
+        return '';
+    s = '<tr>'
+    if 'caller' in rp:
+        s +=   '<td align="left">'
+        s +=     '&#40;&#40;' # left parenthesis
+        s +=     str(rp['caller'])
+        s +=     '&#41;&#41;' # right parenthesis
         s +=   '</td>'
-        s += '</tr>'
-	return s
+    else:
+        s +=   '<td align="left">' # caller id
+        s +=   '</td>'
+    s +=   '<td align="left">[ '
+    for operand in rp['operands']:
+        s += str(operand) + ' '
+    s +=   ']</td>'
+    s +=   '<td align="left">' # type
+    s +=   '</td>'
+    s += '</tr>'
+    return s
 
 # block obj -> HTML-formatted string
 def getBlockLabel(b):
-	s =  '<<table border="0" cellborder="0" cellpadding="1">'
-	s +=   '<tr><td align="center" bgcolor="black" colspan="3">'
-	s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
-	s +=   '</td></tr>'
+    s =  '<<table border="0" cellborder="0" cellpadding="1">'
+    s +=   '<tr><td align="center" bgcolor="black" colspan="3">'
+    s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
+    s +=   '</td></tr>'
 
-        if 'resumePoint' in b:
-                s += getResumePointLabel(b['resumePoint'], None)
+    if 'resumePoint' in b:
+        s += getResumePointLabel(b['resumePoint'], None)
 
-	for inst in b['instructions']:
-                if 'resumePoint' in inst:
-                        s += getResumePointLabel(inst['resumePoint'], 'At')
+    for inst in b['instructions']:
+        if 'resumePoint' in inst:
+            s += getResumePointLabel(inst['resumePoint'], 'At')
 
-		hasattributes = 'attributes' in inst
-		movable = hasattributes and 'Movable' in inst['attributes']
-		neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
+        hasattributes = 'attributes' in inst
+        movable = hasattributes and 'Movable' in inst['attributes']
+        neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
 
-		s += '<tr>'
-		s +=   '<td align="left" port="i' + str(inst['id']) + '">'
-		s +=     '&#40;' # left parenthesis
-		s +=     str(inst['id'])
-		s +=     '&#41;' # right parenthesis
-		s +=   '</td>'
+        s += '<tr>'
+        s +=   '<td align="left" port="i' + str(inst['id']) + '">'
+        s +=     '&#40;' # left parenthesis
+        s +=     str(inst['id'])
+        s +=     '&#41;' # right parenthesis
+        s +=   '</td>'
 
-		# Output name with additional styling.
-		s +=   '<td align="left">'
-		if neverhoisted:
-			s += '<u>'
+        # Output name with additional styling.
+        s +=   '<td align="left">'
+        if neverhoisted:
+            s += '<u>'
 
-		if movable:
-			s += '<font color="blue">' + cgi.escape(inst['opcode']) + '</font>'
-		else:
-			s += cgi.escape(inst['opcode'])
+        if movable:
+            s += '<font color="blue">' + cgi.escape(inst['opcode']) + '</font>'
+        else:
+            s += cgi.escape(inst['opcode'])
 
-		if neverhoisted:
-			s += '</u>'
-		s +=   '</td>'
+        if neverhoisted:
+            s += '</u>'
+        s +=   '</td>'
 
-		# Output type.
-		if 'type' in inst and inst['type'] != "None":
-			s +=   '<td align="left">'
-			s +=     cgi.escape(inst['type'])
-			s +=   '</td>'
-		s += '</tr>'
+        # Output type.
+        if 'type' in inst and inst['type'] != "None":
+            s +=   '<td align="left">'
+            s +=     cgi.escape(inst['type'])
+            s +=   '</td>'
+        s += '</tr>'
 
-                if 'resumePoint' in inst:
-                        s += getResumePointLabel(inst['resumePoint'], 'After')
+        if 'resumePoint' in inst:
+            s += getResumePointLabel(inst['resumePoint'], 'After')
 
-	s += '</table>>'
-	return s
+    s += '</table>>'
+    return s
 
 # str -> ir obj -> ir obj -> Graph
 # 'ir' is the IR to be used.
 # 'mir' is always the MIR.
 #  This is because the LIR graph does not contain successor information.
 def buildGraphForIR(name, ir, mir):
-	if len(ir['blocks']) == 0:
-		return None
+    if len(ir['blocks']) == 0:
+        return None
 
-	g = Graph(name, 'digraph')
-	g.addprops({'rankdir':'TB', 'splines':'true'})
+    g = Graph(name, 'digraph')
+    g.addprops({'rankdir':'TB', 'splines':'true'})
 
-	for i in range(0, len(ir['blocks'])):
-		bactive = ir['blocks'][i] # Used for block contents.
-		b = mir['blocks'][i] # Used for drawing blocks and edges.
+    for i in range(0, len(ir['blocks'])):
+        bactive = ir['blocks'][i] # Used for block contents.
+        b = mir['blocks'][i] # Used for drawing blocks and edges.
 
-		node = Node(getBlockNodeName(bactive))
-		node.addprops({'shape':'box', 'label':getBlockLabel(bactive)})
-		
-		if 'backedge' in b['attributes']:
-			node.addprops({'color':'red'})
-		if 'loopheader' in b['attributes']:
-			node.addprops({'color':'green'})
-		if 'splitedge' in b['attributes']:
-			node.addprops({'style':'dashed'})
+        node = Node(getBlockNodeName(bactive))
+        node.addprops({'shape':'box', 'label':getBlockLabel(bactive)})
+        
+        if 'backedge' in b['attributes']:
+            node.addprops({'color':'red'})
+        if 'loopheader' in b['attributes']:
+            node.addprops({'color':'green'})
+        if 'splitedge' in b['attributes']:
+            node.addprops({'style':'dashed'})
 
-		g.addnode(node)
+        g.addnode(node)
 
-		for succ in b['successors']: # which are integers
-			edge = Edge(getBlockNodeName(bactive), blockNumToNodeName(succ))
-				
-			if len(b['successors']) == 2:
-				if succ == b['successors'][0]:
-					edge.addprops({'label':'1'})
-				else:
-					edge.addprops({'label':'0'})
+        for succ in b['successors']: # which are integers
+            edge = Edge(getBlockNodeName(bactive), blockNumToNodeName(succ))
+                
+            if len(b['successors']) == 2:
+                if succ == b['successors'][0]:
+                    edge.addprops({'label':'1'})
+                else:
+                    edge.addprops({'label':'0'})
 
-			g.addedge(edge)
+            g.addedge(edge)
 
-	return g
+    return g
 
 # pass obj -> output file -> (Graph OR None, Graph OR None)
 # The return value is (MIR, LIR); either one may be absent.
 def buildGraphsForPass(p):
-	name = p['name']
-	mir = p['mir']
-	lir = p['lir']
-	return (buildGraphForIR(name, mir, mir), buildGraphForIR(name, lir, mir))
+    name = p['name']
+    mir = p['mir']
+    lir = p['lir']
+    return (buildGraphForIR(name, mir, mir), buildGraphForIR(name, lir, mir))
 
 # function obj -> output file -> (Graph OR None, Graph OR None) list
 # First entry in each tuple corresponds to MIR; second, to LIR.
 def buildGraphs(func):
-	graphstup = []
-	for p in func['passes']:
-		gtup = buildGraphsForPass(p)
-		graphstup.append(gtup)
-
-	return graphstup
+    graphstup = []
+    for p in func['passes']:
+        gtup = buildGraphsForPass(p)
+        graphstup.append(gtup)
+    return graphstup
 
 
 # Write out a graph, constructing a nice filename.
 # function id -> pass id -> IR string -> Graph -> void
 def outputPass(fnum, pnum, irname, g):
-	filename  = 'func' + str(fnum).zfill(2)
-	filename += '-pass' + str(pnum).zfill(2)
-	filename += '-' + g.name
-	filename += '-' + str(irname)
-	filename += '.gv'
+    filename  = 'func' + str(fnum).zfill(2)
+    filename += '-pass' + str(pnum).zfill(2)
+    filename += '-' + g.name
+    filename += '-' + str(irname)
+    filename += '.gv'
 
-	f = open(filename, 'w')
-	g.write(f)
-	f.close()
+    f = open(filename, 'w')
+    g.write(f)
+    f.close()
 
 # Add in closing } and ] braces to close a JSON file in case of error.
 def parenthesize(s):
-	stack = []
-	for c in s:
-		if   c == '{' or c == '[':
-			stack.append(c)
-		elif c == '}' or c == ']':
-			stack.pop()
-	
-	while stack:
-		c = stack.pop()
-		if   c == '{': s += '}'
-		elif c == '[': s += ']'
+    stack = []
+    for c in s:
+        if   c == '{' or c == '[':
+            stack.append(c)
+        elif c == '}' or c == ']':
+            stack.pop()
+    
+    while stack:
+        c = stack.pop()
+        if   c == '{': s += '}'
+        elif c == '[': s += ']'
 
-	return s
+    return s
 
 def main():
 # Operate on provided file.
-	from sys import argv
+    from sys import argv
 
-	if len(argv) != 2:
-		sys.stderr.write(" Usage: " + sys.argv[0] + " <JSON file>\n")
-		sys.exit(1)
+    if len(argv) != 2 or argv[1] == '--help' or argv[1] == '-h':
+        sys.stderr.write(" Usage: " + sys.argv[0] + " <JSON file>\n")
+        sys.exit(1)
 
-	f = open(argv[1], 'r')
-	s = f.read()
-	f.close()
+    f = open(argv[1], 'r')
+    s = f.read()
+    f.close()
 
-	ion = json.loads(parenthesize(s))
+    ion = json.loads(parenthesize(s))
 
-	for i in range(0, len(ion['functions'])):
-		func = ion['functions'][i]
-		gtl = buildGraphs(func)
+    for i in range(0, len(ion['functions'])):
+        func = ion['functions'][i]
+        gtl = buildGraphs(func)
 
-		if len(gtl) == 0:
-			sys.stderr.write(" function %d (%s): abort during SSA construction.\n" % (i, func['name']))
-		else:
-			sys.stderr.write(" function %d (%s): success; %d passes.\n" % (i, func['name'], len(gtl)))
+        if len(gtl) == 0:
+            sys.stderr.write(" function %d (%s): abort during SSA construction.\n" % (i, func['name']))
+        else:
+            sys.stderr.write(" function %d (%s): success; %d passes.\n" % (i, func['name'], len(gtl)))
 
-		for j in range(0, len(gtl)):
-			gt = gtl[j]
-			mir = gt[0]
-			lir = gt[1]
+        for j in range(0, len(gtl)):
+            gt = gtl[j]
+            mir = gt[0]
+            lir = gt[1]
 
-			# Only output one of (MIR, LIR). Prefer LIR.
-			# This is just to avoid spam; change if you care about it.
-			if lir != None:
-				outputPass(i, j, 'lir', lir)
-			elif mir != None:
-				outputPass(i, j, 'mir', mir)
+            # Only output one of (MIR, LIR). Prefer LIR.
+            # This is just to avoid spam; change if you care about it.
+            if lir != None:
+                outputPass(i, j, 'lir', lir)
+            elif mir != None:
+                outputPass(i, j, 'mir', mir)
 
 if __name__ == '__main__':
-	main()
+    main()
 
