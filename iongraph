@@ -92,9 +92,9 @@ def blockNumToNodeName(i):
     return quote('Block' + str(i))
 
 # resumePoint obj -> HTML-formatted string
-def getResumePointLabel(rp, mode):
+def getResumePointRow(rp, mode):
     if mode != None and mode != rp['mode']:
-        return '';
+        return ''
 
     # Left column: caller.
     rpCaller = '<td align="left"></td>'
@@ -142,16 +142,16 @@ def getBlockLabel(b):
     s += '<tr>%s</tr>' % blockTitle
     
     if 'resumePoint' in b:
-        s += getResumePointLabel(b['resumePoint'], None)
+        s += getResumePointRow(b['resumePoint'], None)
 
     for inst in b['instructions']:
         if 'resumePoint' in inst:
-            s += getResumePointLabel(inst['resumePoint'], 'At')
+            s += getResumePointRow(inst['resumePoint'], 'At')
 
         s += getInstructionRow(inst)
 
         if 'resumePoint' in inst:
-            s += getResumePointLabel(inst['resumePoint'], 'After')
+            s += getResumePointRow(inst['resumePoint'], 'After')
 
     s += '</table>>'
     return s
