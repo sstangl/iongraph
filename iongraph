@@ -9,7 +9,7 @@ import sys
 import cgi
 
 def quote(s):
-    return '"' + str(s) + '"'
+    return '"%s"' % str(s)
 
 # Simple classes for the used subset of GraphViz' Dot format.
 # There are more complicated constructors out there, but they all
@@ -83,10 +83,6 @@ class Graph(GraphWidget):
         print >> f, '}'
 
 
-# inst -> string with quotation marks
-def getInstructionName(inst):
-    return '"(' + str(inst['id']) + ') ' + inst['opcode'] + '"'
-
 # block obj -> node string with quotations
 def getBlockNodeName(b):
     return blockNumToNodeName(b['number'])
@@ -99,32 +95,52 @@ def blockNumToNodeName(i):
 def getResumePointLabel(rp, mode):
     if mode != None and mode != rp['mode']:
         return '';
-    s = '<tr>'
+
+    # Left column: caller.
+    rpCaller = '<td align="left"></td>'
     if 'caller' in rp:
-        s +=   '<td align="left">'
-        s +=     '&#40;&#40;' # left parenthesis
-        s +=     str(rp['caller'])
-        s +=     '&#41;&#41;' # right parenthesis
-        s +=   '</td>'
-    else:
-        s +=   '<td align="left">' # caller id
-        s +=   '</td>'
-    s +=   '<td align="left">[ '
-    for operand in rp['operands']:
-        s += str(operand) + ' '
-    s +=   ']</td>'
-    s +=   '<td align="left">' # type
-    s +=   '</td>'
-    s += '</tr>'
-    return s
+        rpCaller = '<td align="left">&#40;&#40;%s&#41;&#41;</td>' % str(rp['caller'])
+
+    # Middle column: ordered contents of the MResumePoint.
+    insts = ''.join('%s ' % t for t in rp['operands'])
+    rpContents = '<td align="left"><font color="grey50">resumepoint %s</font></td>' % insts
+
+    # Right column: unused.
+    rpRight = '<td></td>'
+
+    return '<tr>%s%s%s</tr>' % (rpCaller, rpContents, rpRight)
+
+# Outputs a single row for an instruction, excluding MResumePoints.
+# instruction -> HTML-formatted string
+def getInstructionRow(inst):
+    # Left column: instruction ID.
+    instId = str(inst['id'])
+    instLabel = '<td align="right" port="i%s">%s</td>' % (instId, instId)
+
+    # Middle column: instruction name.
+    instName = cgi.escape(inst['opcode'])
+    if 'attributes' in inst:
+        if 'Movable' in inst['attributes']:
+            instName = '<font color="blue">%s</font>' % instName
+        if 'NeverHoisted' in inst['attributes']:
+            instName = '<u>%s</u>' % instName
+    instName = '<td align="left">%s</td>' % instName
+
+    # Right column: instruction MIRType.
+    instType = ''
+    if 'type' in inst and inst['type'] != "None":
+        instType = '<td align="left">%s</td>' % cgi.escape(inst['type'])
+
+    return '<tr>%s%s%s</tr>' % (instLabel, instName, instType)
 
 # block obj -> HTML-formatted string
 def getBlockLabel(b):
     s =  '<<table border="0" cellborder="0" cellpadding="1">'
-    s +=   '<tr><td align="center" bgcolor="black" colspan="3">'
-    s +=     '<font color="white">Block ' + str(b['number']) + '</font>'  
-    s +=   '</td></tr>'
 
+    blockTitle = '<font color="white">Block %s</font>' % str(b['number'])
+    blockTitle = '<td align="center" bgcolor="black" colspan="3">%s</td>' % blockTitle
+    s += '<tr>%s</tr>' % blockTitle
+    
     if 'resumePoint' in b:
         s += getResumePointLabel(b['resumePoint'], None)
 
@@ -132,37 +148,7 @@ def getBlockLabel(b):
         if 'resumePoint' in inst:
             s += getResumePointLabel(inst['resumePoint'], 'At')
 
-        hasattributes = 'attributes' in inst
-        movable = hasattributes and 'Movable' in inst['attributes']
-        neverhoisted = hasattributes and 'NeverHoisted' in inst['attributes']
-
-        s += '<tr>'
-        s +=   '<td align="left" port="i' + str(inst['id']) + '">'
-        s +=     '&#40;' # left parenthesis
-        s +=     str(inst['id'])
-        s +=     '&#41;' # right parenthesis
-        s +=   '</td>'
-
-        # Output name with additional styling.
-        s +=   '<td align="left">'
-        if neverhoisted:
-            s += '<u>'
-
-        if movable:
-            s += '<font color="blue">' + cgi.escape(inst['opcode']) + '</font>'
-        else:
-            s += cgi.escape(inst['opcode'])
-
-        if neverhoisted:
-            s += '</u>'
-        s +=   '</td>'
-
-        # Output type.
-        if 'type' in inst and inst['type'] != "None":
-            s +=   '<td align="left">'
-            s +=     cgi.escape(inst['type'])
-            s +=   '</td>'
-        s += '</tr>'
+        s += getInstructionRow(inst)
 
         if 'resumePoint' in inst:
             s += getResumePointLabel(inst['resumePoint'], 'After')
@@ -231,11 +217,10 @@ def buildGraphs(func):
 # Write out a graph, constructing a nice filename.
 # function id -> pass id -> IR string -> Graph -> void
 def outputPass(fnum, pnum, irname, g):
-    filename  = 'func' + str(fnum).zfill(2)
-    filename += '-pass' + str(pnum).zfill(2)
-    filename += '-' + g.name
-    filename += '-' + str(irname)
-    filename += '.gv'
+    funcid = str(fnum).zfill(2)
+    passid = str(pnum).zfill(2)
+
+    filename = 'func%s-pass%s-%s-%s.gv' % (funcid, passid, g.name, str(irname))
 
     f = open(filename, 'w')
     g.write(f)
