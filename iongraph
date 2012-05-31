@@ -216,6 +216,8 @@ def buildGraphs(func):
 # function obj -> (Graph OR None, Graph OR None) list
 # Only builds the final pass.
 def buildOnlyFinalPass(func):
+    if len(func['passes']) == 0:
+        return [None, None]
     p = func['passes'][-1]
     return [buildGraphsForPass(p)]
 
@@ -294,6 +296,9 @@ def main():
 
         for j in range(0, len(gtl)):
             gt = gtl[j]
+            if gt == None:
+                continue
+
             mir = gt[0]
             lir = gt[1]
 
