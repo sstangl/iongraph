@@ -2,7 +2,7 @@
   Primitive visualizer for IonMonkey graphs using GraphViz.
   Doesn't involve Java. Generated images and DOT files are saved on disk.
 
-  Copyright Sean Stangl <sstangl@mozilla.com>, 2011.
+  Copyright Sean Stangl <sstangl@mozilla.com>, 2011-2012.
 
 IONMONKEY
 
@@ -11,8 +11,8 @@ IONMONKEY
 
 USAGE
 
-  IonMonkey, when it runs without asserting, dumps a JSON file that contains
-  observations about graph state after various passes into /tmp/ion.json.
+  Make a debug build of IonMonkey, then run with the envvar IONFLAGS=logs.
+  IonMonkey will then dump observations about graph state into /tmp/ion.json.
 
   Executing 'make' reads in this file, outputs a DOT file for each function
   and for each pass for each function, and then generates visualizations
