@@ -250,29 +250,46 @@ def parenthesize(s):
     return s
 
 def dieWithUsage():
-    sys.stderr.write(" Usage: " + sys.argv[0] + " [--final] <JSON file>\n")
+    sys.stderr.write(" Usage: " + sys.argv[0] + " [--final] [--funcnum N] <JSON file>\n")
     sys.exit(1)
 
 def main():
 # Operate on provided file.
     from sys import argv
 
-    argFilename = ''
-    optFinal = False
-    
+    # Get rid of program name.
+    argv.pop(0)
 
-    if len(argv) < 2 or argv[1] == '--help' or argv[1] == '-h':
-        dieWithUsage()
-
-    if len(argv) == 2:
-        argFilename = argv[1]
-    elif len(argv) == 3:
-        if argv[1] != '--final':
+    # --help option: die with some output.
+    for i in range(0, len(argv)):
+        if argv[i] == '--help' or argv[i] == '-h':
             dieWithUsage()
-        argFilename = argv[2]
-        optFinal = True
-    else:
+
+    # --final option: only generate the last MIR/LIR.
+    optFinal = False
+    for i in range(0, len(argv)):
+        if argv[i] == '--final':
+            optFinal = True
+            argv.pop(i)
+            break
+
+    # --funcnum N option: only operate on the provided function, by index.
+    optFunc = -1
+    for i in range(0, len(argv)):
+        if argv[i] == '--funcnum':
+            try:
+                optFunc = int(argv[i+1])
+            except:
+                dieWithUsage()
+            argv.pop(i)
+            argv.pop(i)
+            break
+
+    # Last remaining option in argv should be the mandatory input filename.
+    if len(argv) != 1:
         dieWithUsage()
+    argFilename = argv[0]
+
 
     f = open(argFilename, 'r')
     s = f.read()
@@ -282,6 +299,9 @@ def main():
 
     for i in range(0, len(ion['functions'])):
         func = ion['functions'][i]
+
+        if optFunc > 0 and i != optFunc:
+            continue
 
         gtl = []
         if optFinal:
