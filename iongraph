@@ -255,40 +255,41 @@ def dieWithUsage():
 
 def main():
 # Operate on provided file.
-    from sys import argv
+    import sys
+    args = list(sys.argv)
 
     # Get rid of program name.
-    argv.pop(0)
+    args.pop(0)
 
     # --help option: die with some output.
-    for i in range(0, len(argv)):
-        if argv[i] == '--help' or argv[i] == '-h':
+    for i in range(0, len(args)):
+        if args[i] == '--help' or args[i] == '-h':
             dieWithUsage()
 
     # --final option: only generate the last MIR/LIR.
     optFinal = False
-    for i in range(0, len(argv)):
-        if argv[i] == '--final':
+    for i in range(0, len(args)):
+        if args[i] == '--final':
             optFinal = True
-            argv.pop(i)
+            args.pop(i)
             break
 
     # --funcnum N option: only operate on the provided function, by index.
     optFunc = -1
-    for i in range(0, len(argv)):
-        if argv[i] == '--funcnum':
+    for i in range(0, len(args)):
+        if args[i] == '--funcnum':
             try:
-                optFunc = int(argv[i+1])
-            except:
+                optFunc = int(args[i+1])
+            except e:
                 dieWithUsage()
-            argv.pop(i)
-            argv.pop(i)
+            args.pop(i)
+            args.pop(i)
             break
 
-    # Last remaining option in argv should be the mandatory input filename.
-    if len(argv) != 1:
+    # Last remaining option in args should be the mandatory input filename.
+    if len(args) != 1:
         dieWithUsage()
-    argFilename = argv[0]
+    argFilename = args[0]
 
 
     f = open(argFilename, 'r')
