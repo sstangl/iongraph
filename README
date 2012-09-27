@@ -7,7 +7,9 @@
 IONMONKEY
 
   IonMonkey is a compiler for JavaScript that uses an SSA-form IR.
-  IonMonkey may be downloaded from http://hg.mozilla.org/projects/ionmonkey.
+
+  Mozilla-Central (https://hg.mozilla.org/mozilla-central) includes IonMonkey
+  as part of the SpiderMonkey JavaScript engine in js/src.
 
 USAGE
 
