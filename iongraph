@@ -236,11 +236,17 @@ def outputPass(fnum, pnum, irname, g):
 # Add in closing } and ] braces to close a JSON file in case of error.
 def parenthesize(s):
     stack = []
+    inString = False
+
     for c in s:
-        if   c == '{' or c == '[':
-            stack.append(c)
-        elif c == '}' or c == ']':
-            stack.pop()
+        if c == '"': # Doesn't handle escaped strings.
+            inString = not inString
+
+        if not inString:
+            if   c == '{' or c == '[':
+                stack.append(c)
+            elif c == '}' or c == ']':
+                stack.pop()
     
     while stack:
         c = stack.pop()
