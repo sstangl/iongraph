@@ -138,12 +138,11 @@ def getBlockLabel(b):
     s =  '<<table border="0" cellborder="0" cellpadding="1">'
 
     if 'blockUseCount' in b:
-        blockUseCount = str(b['blockUseCount'])
+        blockUseCount = "(Count: %s)" % str(b['blockUseCount'])
     else:
-        blockUseCount = 'N/A'
+        blockUseCount = ""
 
-    blockTitle = '<font color="white">Block %s (Count: %s)</font>' % \
-            (str(b['number']), blockUseCount)
+    blockTitle = '<font color="white">Block %s %s</font>' % (str(b['number']), blockUseCount)
     blockTitle = '<td align="center" bgcolor="black" colspan="3">%s</td>' % blockTitle
     s += '<tr>%s</tr>' % blockTitle
     
