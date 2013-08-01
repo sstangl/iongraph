@@ -137,7 +137,12 @@ def getInstructionRow(inst):
 def getBlockLabel(b):
     s =  '<<table border="0" cellborder="0" cellpadding="1">'
 
-    blockTitle = '<font color="white">Block %s</font>' % str(b['number'])
+    if 'blockUseCount' in b:
+        blockUseCount = "(Count: %s)" % str(b['blockUseCount'])
+    else:
+        blockUseCount = ""
+
+    blockTitle = '<font color="white">Block %s %s</font>' % (str(b['number']), blockUseCount)
     blockTitle = '<td align="center" bgcolor="black" colspan="3">%s</td>' % blockTitle
     s += '<tr>%s</tr>' % blockTitle
     
