@@ -3,7 +3,7 @@
 make_pdf_per_pass() {
 	# Use GNU parallel to generate dot files, if present.
 	type parallel &>/dev/null &&
-	ls -1 *.gv | parallel '(dot {} -Tpdf) > {}.pdf' &&
+	ls -1 *.gv | parallel --gnu -- '(dot {} -Tpdf) > {}.pdf' &&
 	return 0
 
 	# Otherwise, generate dot files sequentially.

@@ -2,7 +2,7 @@
 
 # Use GNU parallel to generate dot files, if present.
 type parallel &>/dev/null &&
-ls -1 *.gv | parallel '(dot {} -Tpng) > {}.png' &&
+ls -1 *.gv | parallel --gnu -- '(dot {} -Tpng) > {}.png' &&
 exit 0
 
 # Otherwise, generate dot files sequentially.
