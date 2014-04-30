@@ -124,6 +124,8 @@ def getInstructionRow(inst):
             instName = '<font color="blue">%s</font>' % instName
         if 'NeverHoisted' in inst['attributes']:
             instName = '<u>%s</u>' % instName
+        if 'InWorklist' in inst['attributes']:
+            instName = '<font color="red">%s</font>' % instName
     instName = '<td align="left">%s</td>' % instName
 
     # Right column: instruction MIRType.
