@@ -120,10 +120,14 @@ def getInstructionRow(inst):
     # Middle column: instruction name.
     instName = cgi.escape(inst['opcode'])
     if 'attributes' in inst:
-        if 'Movable' in inst['attributes']:
+        if 'RecoveredOnBailout' in inst['attributes']:
+            instName = '<font color="gray50">%s</font>' % instName
+        elif 'Movable' in inst['attributes']:
             instName = '<font color="blue">%s</font>' % instName
         if 'NeverHoisted' in inst['attributes']:
             instName = '<u>%s</u>' % instName
+        if 'InWorklist' in inst['attributes']:
+            instName = '<font color="red">%s</font>' % instName
     instName = '<td align="left">%s</td>' % instName
 
     # Right column: instruction MIRType.
