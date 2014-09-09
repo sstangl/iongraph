@@ -110,6 +110,23 @@ def getResumePointRow(rp, mode):
 
     return '<tr>%s%s%s</tr>' % (rpCaller, rpContents, rpRight)
 
+# memInputs obj -> HTML-formatted string
+def getMemInputsRow(list):
+    if len(list) == 0:
+        return ''
+
+    # Left column: caller.
+    memLeft = '<td align="left"></td>'
+
+    # Middle column: ordered contents of the MResumePoint.
+    insts = ''.join('%s ' % str(t) for t in list)
+    memContents = '<td align="left"><font color="grey50">memory %s</font></td>' % insts
+
+    # Right column: unused.
+    memRight = '<td></td>'
+
+    return '<tr>%s%s%s</tr>' % (memLeft, memContents, memRight)
+
 # Outputs a single row for an instruction, excluding MResumePoints.
 # instruction -> HTML-formatted string
 def getInstructionRow(inst):
@@ -158,6 +175,9 @@ def getBlockLabel(b):
             s += getResumePointRow(inst['resumePoint'], 'At')
 
         s += getInstructionRow(inst)
+
+        if 'memInputs' in inst:
+            s += getMemInputsRow(inst['memInputs'])
 
         if 'resumePoint' in inst:
             s += getResumePointRow(inst['resumePoint'], 'After')
