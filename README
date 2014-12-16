@@ -16,6 +16,19 @@ USAGE
   Make a debug build of IonMonkey, then run with the envvar IONFLAGS=logs.
   IonMonkey will then dump observations about graph state into /tmp/ion.json.
 
+  IMPORTANT:
+    IonMonkey by default uses background threads for compilation, but the
+    JitSpewer, the thing that outputs ion.json, was never updated to work
+    with threads, so by default ion.json contains blank data.
+
+    You can work around this by passing --ion-offthread-compile=off.
+    If using jit-tests, this looks like:
+
+      python jit-tests/jit-tests.py path/to/shell.js --args="--ion-offthread-compile=off"
+
+    If you want to write the support for parallel ion.json generation,
+    message sstangl on irc.mozilla.org/#jsapi.
+
   Executing 'make' reads in this file, outputs a DOT file for each function
   and for each pass for each function, and then generates visualizations
   of those DOT files in PNG and PDF format.
