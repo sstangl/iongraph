@@ -8,7 +8,7 @@ make_pdf_per_pass() {
 
 	# Otherwise, generate dot files sequentially.
 	ls -1 *.gv | while read g; do
-		dot "${g}" -Tpdf > "${g}.gv.pdf"
+		dot "${g}" -Tpdf > "${g}.pdf"
 	done
 }
 
