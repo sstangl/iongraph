@@ -339,11 +339,7 @@ def main():
         if optFunc >= 0 and i != optFunc:
             continue
 
-        gtl = []
-        if optFinal:
-            gtl = buildOnlyFinalPass(func)
-        else:
-            gtl = buildGraphs(func)
+        gtl = buildOnlyFinalPass(func) if optFinal else buildGraphs(func)
 
         if len(gtl) == 0:
             sys.stderr.write(" function %d (%s): abort during SSA construction.\n" % (i, func['name']))
