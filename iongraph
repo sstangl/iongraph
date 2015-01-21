@@ -196,7 +196,7 @@ def buildGraphForIR(name, ir, mir):
     g = Graph(name, 'digraph')
     g.addprops({'rankdir':'TB', 'splines':'true'})
 
-    for i in range(0, len(ir['blocks'])):
+    for i in xrange(0, len(ir['blocks'])):
         bactive = ir['blocks'][i] # Used for block contents.
         b = mir['blocks'][i] # Used for drawing blocks and edges.
 
@@ -297,13 +297,13 @@ def main():
     args.pop(0)
 
     # --help option: die with some output.
-    for i in range(0, len(args)):
+    for i in xrange(0, len(args)):
         if args[i] == '--help' or args[i] == '-h':
             dieWithUsage()
 
     # --final option: only generate the last MIR/LIR.
     optFinal = False
-    for i in range(0, len(args)):
+    for i in xrange(0, len(args)):
         if args[i] == '--final':
             optFinal = True
             args.pop(i)
@@ -311,7 +311,7 @@ def main():
 
     # --funcnum N option: only operate on the provided function, by index.
     optFunc = -1
-    for i in range(0, len(args)):
+    for i in xrange(0, len(args)):
         if args[i] == '--funcnum':
             try:
                 optFunc = int(args[i+1])
@@ -333,7 +333,7 @@ def main():
 
     ion = json.loads(parenthesize(s))
 
-    for i in range(0, len(ion['functions'])):
+    for i in xrange(0, len(ion['functions'])):
         func = ion['functions'][i]
 
         if optFunc >= 0 and i != optFunc:
@@ -350,7 +350,7 @@ def main():
         else:
             sys.stderr.write(" function %d (%s): success; %d passes.\n" % (i, func['name'], len(gtl)))
 
-        for j in range(0, len(gtl)):
+        for j in xrange(0, len(gtl)):
             gt = gtl[j]
             if gt == None:
                 continue
