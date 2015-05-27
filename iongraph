@@ -61,6 +61,11 @@ class Graph(GraphWidget):
 
     def write(self, f):
         print >> f, self.type, '{'
+
+        # Use the pass name as the graph title (at the top).
+        print >> f, 'labelloc = t;'
+        print >> f, 'labelfontsize = 30;'
+        print >> f, 'label = "%s";' % self.name
         
         # Output graph properties.
         for p in self.props:
