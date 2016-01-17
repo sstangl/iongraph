@@ -15,7 +15,14 @@ make_pdf_per_pass() {
 make_pdf_per_pass;
 
 # Concatenate the per-pass PDFs into a single PDF per-compilation.
-for i in func*-pass00-*.gv.pdf; do
-    base=${i/-*/}
-    pdftk "${base}"-*.pdf cat output "${base}.pdf"
-done
+if type pdftk &> /dev/null; then
+    for i in func*-pass00-*.gv.pdf; do
+        base=${i/-*/}
+        pdftk "${base}"-*.pdf cat output "${base}.pdf"
+    done
+elif type qpdf &> /dev/null; then
+    for i in func*-pass00-*.gv.pdf; do
+        base=${i/-*/}
+        qpdf --empty --pages "${base}"-*.pdf -- "${base}.pdf"
+    done
+fi
