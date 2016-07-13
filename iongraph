@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 tw=99 et:
 
 # iongraph -- Translate IonMonkey JSON to GraphViz.
-# Copyright 2011-2012, Sean Stangl <sstangl@mozilla.com>
+# Copyright 2011-2016, Sean Stangl <sstangl@mozilla.com>
 
 import json
 import sys
@@ -54,38 +54,38 @@ class Graph(GraphWidget):
         if len(o.props) == 0:
             return
 
-        print >> f, '[',
+        print('[', end=' ', file=f)
         for p in o.props:
-            print >> f, str(p) + '=' + str(o.props[p]),
-        print >> f, ']',
+            print(str(p) + '=' + str(o.props[p]), end=' ', file=f)
+        print(']', end=' ', file=f)
 
     def write(self, f):
-        print >> f, self.type, '{'
+        print(self.type, '{', file=f)
 
         # Use the pass name as the graph title (at the top).
-        print >> f, 'labelloc = t;'
-        print >> f, 'labelfontsize = 30;'
-        print >> f, 'label = "%s";' % self.name
+        print('labelloc = t;', file=f)
+        print('labelfontsize = 30;', file=f)
+        print('label = "%s";' % self.name, file=f)
         
         # Output graph properties.
         for p in self.props:
-            print >> f, '  ' + str(p) + '=' + str(self.props[p])
-        print >> f, ''
+            print('  ' + str(p) + '=' + str(self.props[p]), file=f)
+        print('', file=f)
 
         # Output node list.
         for n in self.nodes:
-            print >> f, '  ' + n.name,
+            print('  ' + n.name, end=' ', file=f)
             self.writeprops(f, n)
-            print >> f, ';'
-        print >> f, ''
+            print(';', file=f)
+        print('', file=f)
         
         # Output edge list.
         for e in self.edges:
-            print >> f, '  ' + e.nfrom, '->', e.nto,
+            print('  ' + e.nfrom, '->', e.nto, end=' ', file=f)
             self.writeprops(f, e)
-            print >> f, ';'
+            print(';', file=f)
 
-        print >> f, '}'
+        print('}', file=f)
 
 
 # block obj -> node string with quotations
@@ -201,7 +201,7 @@ def buildGraphForIR(name, ir, mir):
     g = Graph(name, 'digraph')
     g.addprops({'rankdir':'TB', 'splines':'true'})
 
-    for i in xrange(0, len(ir['blocks'])):
+    for i in range(0, len(ir['blocks'])):
         bactive = ir['blocks'][i] # Used for block contents.
         b = mir['blocks'][i] # Used for drawing blocks and edges.
 
@@ -302,13 +302,13 @@ def main():
     args.pop(0)
 
     # --help option: die with some output.
-    for i in xrange(0, len(args)):
+    for i in range(0, len(args)):
         if args[i] == '--help' or args[i] == '-h':
             dieWithUsage()
 
     # --final option: only generate the last MIR/LIR.
     optFinal = False
-    for i in xrange(0, len(args)):
+    for i in range(0, len(args)):
         if args[i] == '--final':
             optFinal = True
             args.pop(i)
@@ -316,7 +316,7 @@ def main():
 
     # --funcnum N option: only operate on the provided function, by index.
     optFunc = -1
-    for i in xrange(0, len(args)):
+    for i in range(0, len(args)):
         if args[i] == '--funcnum':
             try:
                 optFunc = int(args[i+1])
@@ -338,7 +338,7 @@ def main():
 
     ion = json.loads(parenthesize(s))
 
-    for i in xrange(0, len(ion['functions'])):
+    for i in range(0, len(ion['functions'])):
         func = ion['functions'][i]
 
         if optFunc >= 0 and i != optFunc:
@@ -351,7 +351,7 @@ def main():
         else:
             sys.stderr.write(" function %d (%s): success; %d passes.\n" % (i, func['name'], len(gtl)))
 
-        for j in xrange(0, len(gtl)):
+        for j in range(0, len(gtl)):
             gt = gtl[j]
             if gt == None:
                 continue
