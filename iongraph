@@ -295,7 +295,7 @@ def main():
     parser.add_argument('--final', help='Only generate the final optimized MIR/LIR graphs.',
                                    action='store_true')
     parser.add_argument('--funcnum', help='Only operate on the specified function, by index.',
-                                     type=int)
+                                     type=int, default=-1)
     parser.add_argument('--passnum', help='Only operate on the specified pass, by index.',
                                      type=int, default=-1)
     parser.add_argument('--out-mir', help='Select the file where the MIR output would be written to.',
