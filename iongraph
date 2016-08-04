@@ -37,9 +37,10 @@ class Edge(GraphWidget):
         self.nto = str(nto)
 
 class Graph(GraphWidget):
-    def __init__(self, name, type):
+    def __init__(self, name, func, type):
         GraphWidget.__init__(self)
         self.name = name
+        self.func = func
         self.type = str(type)
         self.props = {}
         self.nodes = []
@@ -66,7 +67,7 @@ class Graph(GraphWidget):
         # Use the pass name as the graph title (at the top).
         print('labelloc = t;', file=f)
         print('labelfontsize = 30;', file=f)
-        print('label = "%s";' % self.name, file=f)
+        print('label = "%s -  %s";' % (self.func['name'], self.name), file=f)
         
         # Output graph properties.
         for p in self.props:
@@ -195,11 +196,11 @@ def getBlockLabel(b):
 # 'ir' is the IR to be used.
 # 'mir' is always the MIR.
 #  This is because the LIR graph does not contain successor information.
-def buildGraphForIR(name, ir, mir):
+def buildGraphForIR(name, func, ir, mir):
     if len(ir['blocks']) == 0:
         return None
 
-    g = Graph(name, 'digraph')
+    g = Graph(name, func, 'digraph')
     g.addprops({'rankdir':'TB', 'splines':'true'})
 
     for i in range(0, len(ir['blocks'])):
@@ -233,18 +234,18 @@ def buildGraphForIR(name, ir, mir):
 
 # pass obj -> output file -> (Graph OR None, Graph OR None)
 # The return value is (MIR, LIR); either one may be absent.
-def buildGraphsForPass(p):
+def buildGraphsForPass(p, func):
     name = p['name']
     mir = p['mir']
     lir = p['lir']
-    return (buildGraphForIR(name, mir, mir), buildGraphForIR(name, lir, mir))
+    return (buildGraphForIR(name, func, mir, mir), buildGraphForIR(name, func, lir, mir))
 
 # function obj -> (Graph OR None, Graph OR None) list
 # First entry in each tuple corresponds to MIR; second, to LIR.
 def buildGraphs(func):
     graphstup = []
     for p in func['passes']:
-        gtup = buildGraphsForPass(p)
+        gtup = buildGraphsForPass(p, func)
         graphstup.append(gtup)
     return graphstup
 
@@ -254,7 +255,7 @@ def buildOnlyFinalPass(func):
     if len(func['passes']) == 0:
         return [None, None]
     p = func['passes'][-1]
-    return [buildGraphsForPass(p)]
+    return [buildGraphsForPass(p, func)]
 
 # Write out a graph, constructing a nice filename.
 # function id -> pass id -> IR string -> Graph -> void
