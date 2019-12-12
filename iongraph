@@ -5,7 +5,7 @@
 # Copyright 2011-2016, Sean Stangl <sstangl@mozilla.com>
 
 import argparse
-import cgi
+import html
 import json
 import sys
 
@@ -142,7 +142,7 @@ def getInstructionRow(inst):
     instLabel = '<td align="right" port="i%s">%s</td>' % (instId, instId)
 
     # Middle column: instruction name.
-    instName = cgi.escape(inst['opcode'])
+    instName = html.escape(inst['opcode'])
     if 'attributes' in inst:
         if 'RecoveredOnBailout' in inst['attributes']:
             instName = '<font color="gray50">%s</font>' % instName
@@ -157,7 +157,7 @@ def getInstructionRow(inst):
     # Right column: instruction MIRType.
     instType = ''
     if 'type' in inst and inst['type'] != "None":
-        instType = '<td align="left">%s</td>' % cgi.escape(inst['type'])
+        instType = '<td align="left">%s</td>' % html.escape(inst['type'])
 
     return '<tr>%s%s%s</tr>' % (instLabel, instName, instType)
 
